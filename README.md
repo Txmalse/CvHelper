@@ -57,7 +57,6 @@ pip install opencv-python mediapipe pyautogui
 - Оптимізувати розпізнавання під різне освітлення та положення камери.
 
 ---
-
 ## Ліцензія
 
 Цей проєкт ліцензовано за Creative Commons CC0 1.0 Universal (Public Domain Dedication).  
@@ -65,7 +64,8 @@ pip install opencv-python mediapipe pyautogui
 
 Повний текст ліцензії доступний за посиланням:  
 [https://creativecommons.org/publicdomain/zero/1.0/legalcode](https://creativecommons.org/publicdomain/zero/1.0/legalcode)
----
+
+--- 
 ## Автор
 Txmalse
 
