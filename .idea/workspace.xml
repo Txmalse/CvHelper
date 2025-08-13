@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0a3cd41d-0dbb-480f-979d-518408212a9a" name="Changes" comment="rewrote the readme">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/gesture_recognizer.task" afterDir="false" />
+    <list default="true" id="0a3cd41d-0dbb-480f-979d-518408212a9a" name="Changes" comment="Increased some gesture recognition triggers, and changed the gesture to a clenched fist">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -125,12 +123,21 @@
       <option name="project" value="LOCAL" />
       <updated>1755000785712</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Increased some gesture recognition triggers, and changed the gesture to a clenched fist">
+      <option name="closed" value="true" />
+      <created>1755078009613</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1755078009613</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="readme update" />
     <MESSAGE value="rewrote the readme" />
-    <option name="LAST_COMMIT_MESSAGE" value="rewrote the readme" />
+    <MESSAGE value="Increased some gesture recognition triggers, and changed the gesture to a clenched fist" />
+    <option name="LAST_COMMIT_MESSAGE" value="Increased some gesture recognition triggers, and changed the gesture to a clenched fist" />
   </component>
 </project>

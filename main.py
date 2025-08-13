@@ -4,13 +4,12 @@ import mediapipe as mp
 from mediapipe.tasks import python
 
 gesture_cooldown = 0
-last_bbox = None
 gesture_name = None
 
 MODEL_PATH = 'models/gesture_recognizer.task'
 
 def main():
-    global gesture_name, gesture_cooldown, last_bbox
+    global gesture_name, gesture_cooldown
 
     BaseOptions = mp.tasks.BaseOptions
     GestureRecognizer = mp.tasks.vision.GestureRecognizer
@@ -20,7 +19,7 @@ def main():
 
     # Callback для обробки жестів
     def print_result(result: GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
-        global gesture_name, last_bbox
+        global gesture_name
         if result.gestures:
             gesture = result.gestures[0][0]
             gesture_name = gesture.category_name
@@ -31,18 +30,15 @@ def main():
         base_options=BaseOptions(model_asset_path=MODEL_PATH),
         running_mode=VisionRunningMode.LIVE_STREAM,
         result_callback=print_result,
-        min_hand_detection_confidence=0.3,
-        min_hand_presence_confidence=0.3,
-        min_tracking_confidence=0.3
+        min_hand_detection_confidence=0.5,
+        min_hand_presence_confidence=0.5,
+        min_tracking_confidence=0.7
     )
 
-    # Камера в HD або нижчій роздільності для прискорення
+    # Камера в FHD або нижчій роздільності для прискорення
     cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-
-    frame_skip = 2  # пропуск кожного другого кадру
-    frame_count = 0
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH,  1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
     with GestureRecognizer.create_from_options(options) as recognizer:
         timestamp = 0
@@ -51,14 +47,10 @@ def main():
             if not success:
                 break
 
-            frame_count += 1
-            if frame_count % frame_skip != 0:
-                continue
-
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
             recognizer.recognize_async(mp_image, timestamp)
-            timestamp += 33
+            timestamp += 1
 
             # Дія по жесту
             if gesture_name == 'Closed_Fist' and gesture_cooldown == 0:
