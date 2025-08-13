@@ -24,6 +24,7 @@ def main():
             gesture = result.gestures[0][0]
             gesture_name = gesture.category_name
 
+
     # Налаштування розпізнавача з прискореними параметрами
     options = GestureRecognizerOptions(
         base_options=BaseOptions(model_asset_path=MODEL_PATH),
