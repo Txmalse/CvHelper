@@ -1,68 +1,84 @@
+import pyautogui
 import cv2
 import mediapipe as mp
-import os
-import pyautogui
+from mediapipe.tasks import python
 
-# Прибираємо попередження TensorFlow
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
-# Ініціалізація MediaPipe
-mp_hands = mp.solutions.hands
-mp_drawing = mp.solutions.drawing_utils
-
-# Запуск камери
-cap = cv2.VideoCapture(0)
-
-# Лічильник для запобігання повторних натискань
 gesture_cooldown = 0
+last_bbox = None
+gesture_name = None
 
-with mp_hands.Hands(
-    max_num_hands=1,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-) as hands:
-    while cap.isOpened():
-        success, image = cap.read()
-        if not success:
-            continue
+MODEL_PATH = 'models/gesture_recognizer.task'
 
-        # Перетворення в формат RGB
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image.flags.writeable = False
-        results = hands.process(image)
+def main():
+    global gesture_name, gesture_cooldown, last_bbox
 
-        # Повертаємо зображення у формат BGR
-        image.flags.writeable = True
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    BaseOptions = mp.tasks.BaseOptions
+    GestureRecognizer = mp.tasks.vision.GestureRecognizer
+    GestureRecognizerOptions = mp.tasks.vision.GestureRecognizerOptions
+    GestureRecognizerResult = mp.tasks.vision.GestureRecognizerResult
+    VisionRunningMode = mp.tasks.vision.RunningMode
 
-        if results.multi_hand_landmarks:
-            for hand_landmarks in results.multi_hand_landmarks:
-                mp_drawing.draw_landmarks(
-                    image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
-                # Отримуємо координати великого і вказівного пальця
-                thumb_tip = hand_landmarks.landmark[4]
-                index_tip = hand_landmarks.landmark[8]
-
-                # Розрахунок дистанції між пальцями
-                distance = ((thumb_tip.x - index_tip.x) ** 2 +
-                            (thumb_tip.y - index_tip.y) ** 2) ** 0.5
+    # Callback для обробки жестів
+    def print_result(result: GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
+        global gesture_name, last_bbox
+        if result.gestures:
+            gesture = result.gestures[0][0]
+            gesture_name = gesture.category_name
 
 
-                # Якщо пальці близько вказівний і великий(жест "щіпка") і cooldown закінчився
-                if distance < 0.016 and gesture_cooldown == 0:
-                    pyautogui.press('space')
-                    #print("Distance:", distance)
-                    gesture_cooldown = 60  # 60 кадрів затримка
+    # Налаштування розпізнавача з прискореними параметрами
+    options = GestureRecognizerOptions(
+        base_options=BaseOptions(model_asset_path=MODEL_PATH),
+        running_mode=VisionRunningMode.LIVE_STREAM,
+        result_callback=print_result,
+        min_hand_detection_confidence=0.3,
+        min_hand_presence_confidence=0.3,
+        min_tracking_confidence=0.3
+    )
 
-        # Зменшуємо cooldown
-        if gesture_cooldown > 0:
-            gesture_cooldown -= 1
+    # Камера в HD або нижчій роздільності для прискорення
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-        #cv2.imshow('Gesture Control', image)
+    frame_skip = 2  # пропуск кожного другого кадру
+    frame_count = 0
 
-        if cv2.waitKey(5) & 0xFF == 27:  # ESC для виходу
-            break
+    with GestureRecognizer.create_from_options(options) as recognizer:
+        timestamp = 0
+        while cap.isOpened():
+            success, frame = cap.read()
+            if not success:
+                break
 
-cap.release()
-cv2.destroyAllWindows()
+            frame_count += 1
+            if frame_count % frame_skip != 0:
+                continue
+
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+            recognizer.recognize_async(mp_image, timestamp)
+            timestamp += 33
+
+            # Дія по жесту
+            if gesture_name == 'Closed_Fist' and gesture_cooldown == 0:
+                pyautogui.press('space')
+                gesture_cooldown = 60
+                gesture_name = None
+
+            if gesture_cooldown > 0:
+                gesture_cooldown -= 1
+
+            # Відображення жесту
+            # cv2.putText(frame, f"Gesture: {gesture_name}", (10, 40),
+            #             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            #
+            # cv2.imshow("Gesture Recognition Fast", frame)
+            if cv2.waitKey(1) & 0xFF == 27:
+                break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
